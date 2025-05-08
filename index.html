@@ -31,6 +31,11 @@
       min-height: 80px;
     }
 
+    #result {
+      font-size: 1.5rem;
+      margin-top: 20px;
+    }
+
     .dice {
       transition: transform 0.2s;
     }
@@ -58,39 +63,56 @@
 <body>
   <h1>High Or Lower than 18?</h1>
   <div id="dice">Shake your device 🎲</div>
+  <div id="result"></div>
   <button id="permissionBtn">Enable Shake</button>
 
   <script>
     const diceDiv = document.getElementById("dice");
+    const resultDiv = document.getElementById("result");
     const permissionBtn = document.getElementById("permissionBtn");
+
+    // Dice faces and their corresponding values
     const diceFaces = ["\u2680", "\u2681", "\u2682", "\u2683", "\u2684", "\u2685"];
 
-    function getRandomDieEmoji() {
-      const index = Math.floor(Math.random() * 6);
-      return diceFaces[index];
+    function getRandomIndex() {
+      return Math.floor(Math.random() * 6);
+    }
+
+    function getDieValue(emoji) {
+      return diceFaces.indexOf(emoji) + 1;
     }
 
     function startRollingAnimation() {
       diceDiv.innerHTML = "";
+      resultDiv.textContent = "";
+
+      // Create dice placeholders
       for (let i = 0; i < 6; i++) {
         const span = document.createElement("span");
         span.className = "dice rolling";
-        span.textContent = getRandomDieEmoji();
+        span.textContent = diceFaces[getRandomIndex()];
         diceDiv.appendChild(span);
       }
 
+      // Start animation
       const interval = setInterval(() => {
         document.querySelectorAll(".rolling").forEach(el => {
-          el.textContent = getRandomDieEmoji();
+          el.textContent = diceFaces[getRandomIndex()];
         });
       }, 100);
 
+      // After 3 seconds, stop animation and calculate total
       setTimeout(() => {
         clearInterval(interval);
+
+        let total = 0;
         document.querySelectorAll(".rolling").forEach(el => {
           el.classList.remove("rolling");
-          el.textContent = getRandomDieEmoji();
+          const face = el.textContent;
+          total += getDieValue(face); // Use what's displayed
         });
+
+        resultDiv.textContent = `Total: ${total} (${total >= 18 ? "High" : "Low"})`;
       }, 3000);
     }
 
@@ -107,7 +129,7 @@
       });
     }
 
-    // iOS permission handling
+    // iOS permission
     if (typeof DeviceMotionEvent !== "undefined" &&
         typeof DeviceMotionEvent.requestPermission === "function") {
       permissionBtn.style.display = "block";
@@ -125,7 +147,7 @@
       initShakeListener();
     }
 
-    // Fallback: click to roll
+    // Fallback for desktop: click to roll
     diceDiv.addEventListener("click", startRollingAnimation);
   </script>
 </body>
